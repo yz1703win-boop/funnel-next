@@ -1,0 +1,32 @@
+name: Deploy to Surge
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build static export
+        run: npm run build
+
+      - name: Deploy to Surge
+        run: npx surge --project ./out --domain "$SURGE_DOMAIN" --token "$SURGE_TOKEN"
+        env:
+          SURGE_DOMAIN: ${{ vars.SURGE_DOMAIN }}
+          SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
